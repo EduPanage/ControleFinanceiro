@@ -1,13 +1,11 @@
 # Controle Financeiro
 
-Um sistema simples para gerenciar suas finanças pessoais, permitindo registrar gastos e ganhos, visualizar a situação financeira geral e remover registros feitos de entrada ou saída de valores. 
+Um sistema simples para gerenciar suas finanças pessoais, permitindo registrar gastos e ganhos e remover registros feitos de entrada ou saída de valores. 
 
 ## Funcionalidades
 
 - **Registro de Ganhos**;
 - **Registro de Gastos**;
-- **Situação Geral Financeira**;
-- **Remoção de Registros**.
 
 ## Público Alvo
 
@@ -18,6 +16,12 @@ O sistema não é voltado para um público específico mas sim para toda e qualq
 - **Backend**: PHP puro;
 - **Frontend**: HTML, CSS;
 - **Banco de Dados**: MySql.
+
+## Dependencias
+
+- **Framework**: Materialize;
+- **Banco de Dados**: MySql;
+- **Gerenciador de Dependências**: Composer.
 
 ## Instalação
 
