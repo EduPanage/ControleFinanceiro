@@ -29,3 +29,4 @@ O sistema não é voltado para um público específico mas sim para toda e qualq
    ```bash
    git clone https://github.com/seu-usuario/controle-financeiro.git
 
+ ![image](https://github.com/user-attachments/assets/3547f598-c084-44dd-b0a4-8f521511a332)
