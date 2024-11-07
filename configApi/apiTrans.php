@@ -1,74 +1,21 @@
 <?php
-require_once '../config/db.php';
-require_once '../config/db_api.sql';
-require_once '../models/manage.php';
+require_once '../config/db.php'; 
+require_once '../controllers/TransController.php'; 
+require_once '../Router.php'; 
 
-header("Content-Type: application/json");
+$router = new Router();
+$TransController = new TransactionController($conn);
 
-$method = $_SERVER['REQUEST_METHOD'];
-$transaction = new Transaction($conn);
+header("Content-type: application/json; charset=UTF-8");
 
-// Definindo as rotas referentes às transações
-switch ($method) {
-    case 'POST':
-        $data = json_decode(file_get_contents("php://input"), true);
+// Definindo as rotas para as operações de transaçoes
+$router->add('POST', '/USUARIO', [$TransController, 'createUser']);  
+$router->add('GET', '/USUARIO', [$TransController, 'listUsers']);    
+$router->add('PUT', '/USUARIO/{id}', [$TransController, 'updateUser']); 
+$router->add('DELETE', '/USUARIO/{id}', [$TransController, 'deleteUser']);  
 
-        if (isset($data['action']) && $data['action'] === 'createTransaction') {
-            $userId = $data['userId'] ?? null;
-            $value = $data['value'] ?? null;
-            $type = $data['type'] ?? null; // 'entrada' ou 'saida'
+$requestedPath = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+$pathItens = explode("/", $requestedPath);
+$requestedPath = "/" . $pathItens[2] . ($pathItens[3] ? "/" . $pathItens[3] : '');
 
-            if ($userId && $value && $type) {
-                $transaction->createTransacao($userId, $value, $type);
-                echo json_encode(["message" => "Transação criada com sucesso"]);
-            } else {
-                echo json_encode(["error" => "Dados incompletos"]);
-            }
-        }
-        break;
-
-    case 'GET':
-        if (isset($_GET['transactionId'])) {
-            $transactionId = $_GET['transactionId'];
-            $transactionData = $transaction->listTransacoes($transactionId);  // Alterado para o nome correto do método
-            echo json_encode($transactionData);
-        } elseif (isset($_GET['userId'])) {
-            $userId = $_GET['userId'];
-            $transactions = $transaction->listTransacoes($userId);  // Nome do método corrigido
-            echo json_encode($transactions);
-        } else {
-            echo json_encode(["error" => "ID da transação ou ID do usuário não fornecido"]);
-        }
-        break;
-
-    case 'PUT':
-        $data = json_decode(file_get_contents("php://input"), true);
-        $transactionId = $data['transactionId'] ?? null;
-        $value = $data['value'] ?? null;
-        $type = $data['type'] ?? null; // 'entrada' ou 'saida'
-
-        if ($transactionId && $value && $type) {
-            $transaction->updateTransacao($transactionId, $value, $type);  // Nome do método corrigido
-            echo json_encode(["message" => "Transação atualizada com sucesso"]);
-        } else {
-            echo json_encode(["error" => "Dados incompletos"]);
-        }
-        break;
-
-    case 'DELETE':
-        $data = json_decode(file_get_contents("php://input"), true);
-        $transactionId = $data['transactionId'] ?? null;
-
-        if ($transactionId) {
-            $transaction->removeTransacao($transactionId);  // Nome do método corrigido
-            echo json_encode(["message" => "Transação excluída com sucesso"]);
-        } else {
-            echo json_encode(["error" => "ID da transação não fornecido"]);
-        }
-        break;
-
-    default:
-        echo json_encode(["error" => "Método não suportado"]);
-        break;
-}
-?>
+$router->dispatch($requestedPath);

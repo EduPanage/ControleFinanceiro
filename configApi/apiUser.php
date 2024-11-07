@@ -1,70 +1,21 @@
 <?php
-require_once '../configApi/db.php';
-require_once '../config/db_api.sql';
-require_once '../models/manage.php';
+require_once '../config/db.php'; 
+require_once '../controllers/UserController.php'; 
+require_once '../Router.php'; 
 
-header("Content-Type: application/json");
+$router = new Router();
+$userController = new UserController($conn);
 
-$method = $_SERVER['REQUEST_METHOD'];
-$user = new User($conn);
+header("Content-type: application/json; charset=UTF-8");
 
-//Definindo as rotas referentes ao usuario
-switch ($method) {
-    case 'POST':
-        $data = json_decode(file_get_contents("php://input"), true);
+// Definindo as rotas para as operações de usuário
+$router->add('POST', '/USUARIO', [$userController, 'createUser']);  
+$router->add('GET', '/USUARIO', [$userController, 'listUsers']);    
+$router->add('PUT', '/USUARIO/{id}', [$userController, 'updateUser']); 
+$router->add('DELETE', '/USUARIO/{id}', [$userController, 'deleteUser']);  
 
-        if (isset($data['action']) && $data['action'] === 'createUser') {
-            $name = $data['name'] ?? null;
-            $email = $data['email'] ?? null;
-            $password = $data['password'] ?? null;
+$requestedPath = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+$pathItens = explode("/", $requestedPath);
+$requestedPath = "/" . $pathItens[2] . ($pathItens[3] ? "/" . $pathItens[3] : '');
 
-            if ($name && $email && $password) {
-                $user->createUser($name, $email, $password);
-                echo json_encode(["message" => "Usuário criado com sucesso"]);
-            } else {
-                echo json_encode(["error" => "Dados incompletos"]);
-            }
-        }
-        break;
-
-    case 'GET':
-        if (isset($_GET['userId'])) {
-            $userId = $_GET['userId'];
-            $userData = $user->listUsers($userId);
-            echo json_encode($userData);
-        } else {
-            $users = $user->listUsers();
-            echo json_encode($users);
-        }
-        break;
-
-    case 'PUT':
-        $data = json_decode(file_get_contents("php://input"), true);
-        $userId = $data['userId'] ?? null;
-        $name = $data['name'] ?? null;
-        $email = $data['email'] ?? null;
-
-        if ($userId && $name && $email) {
-            $user->updateUser($userId, $name, $email);
-            echo json_encode(["message" => "Usuário atualizado com sucesso"]);
-        } else {
-            echo json_encode(["error" => "Dados incompletos"]);
-        }
-        break;
-
-    case 'DELETE':
-        $data = json_decode(file_get_contents("php://input"), true);
-        $userId = $data['userId'] ?? null;
-
-        if ($userId) {
-            $user->removeUser($userId);
-            echo json_encode(["message" => "Usuário excluído com sucesso"]);
-        } else {
-            echo json_encode(["error" => "ID do usuário não fornecido"]);
-        }
-        break;
-
-    default:
-        echo json_encode(["error" => "Método não suportado"]);
-        break;
-}
+$router->dispatch($requestedPath);
