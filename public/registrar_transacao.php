@@ -5,6 +5,30 @@ if (!isset($_SESSION['nome_usuario'])) {
     header('Location: cadastro.php');
     exit();
 }
+
+include('db.php');
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $valor = $_POST['valor'];
+    $tipo_transacao = $_POST['tipo_transacao'];
+    $usuario_id = $_SESSION['usuario_id']; 
+
+    try {
+        $sql = "INSERT INTO transacoes (usuario_id, valor, tipo_transacao) VALUES (:usuario_id, :valor, :tipo_transacao)";
+        $stmt = $conn->prepare($sql);
+        $stmt->bindParam(':usuario_id', $usuario_id);
+        $stmt->bindParam(':valor', $valor);
+        $stmt->bindParam(':tipo_transacao', $tipo_transacao);
+
+        if ($stmt->execute()) {
+            $msg = "Transação registrada com sucesso!";
+        } else {
+            $msg = "Erro ao registrar a transação. Tente novamente.";
+        }
+    } catch (PDOException $e) {
+        $msg = "Erro: " . $e->getMessage();
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -25,7 +49,13 @@ if (!isset($_SESSION['nome_usuario'])) {
 
     <div class="container">
         <h4>Bem-vindo, <?php echo htmlspecialchars($_SESSION['nome_usuario']); ?>!</h4>
-        
+
+        <?php if (isset($msg)) { ?>
+            <div class="card-panel teal lighten-2 white-text">
+                <?php echo $msg; ?>
+            </div>
+        <?php } ?>
+
         <form action="registrar_transacao.php" method="POST">
             <div class="input-field">
                 <input type="number" name="valor" id="valor" required>
